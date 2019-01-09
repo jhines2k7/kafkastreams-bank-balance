@@ -1,11 +1,14 @@
 package com.hines.james;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.clients.producer.*;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
+import java.util.Random;
 
 public class BankBalanceProducer {
     public static void main(String[] args) {
@@ -22,31 +25,55 @@ public class BankBalanceProducer {
         // create the producer
         KafkaProducer<String, String> producer = new KafkaProducer<>(producerProperties);
 
-        for (int i = 0; i < 10; i++ ) {
-            // create a producer record
-            // {"name": "John", "amount": 123, "time": "2018-07-19T05:24:52"}
-            ProducerRecord<String, String> record =
-                    new ProducerRecord<>("first_topic", "hello world " + Integer.toString(i));
+        String[] customerNames = new String[] {
+                "Malene",
+                "Hanif",
+                "Filomena",
+                "Riccardo",
+                "Tancred",
+                "Noah"
+        };
 
-            // send data - asynchronous
-            producer.send(record, (RecordMetadata recordMetadata, Exception e) -> {
-                // executes every time a record is successfully sent or an exception is thrown
-                if (e == null) {
-                    // the record was successfully sent
-                    logger.info("Received new metadata. \n" +
-                            "Topic:" + recordMetadata.topic() + "\n" +
-                            "Partition: " + recordMetadata.partition() + "\n" +
-                            "Offset: " + recordMetadata.offset() + "\n" +
-                            "Timestamp: " + recordMetadata.timestamp());
-                } else {
-                    logger.error("Error while producing", e);
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        while(true){
+            // create a producer record ~100/sec
+            for (int i = 0; i < 100; i++ ) {
+                // {"name": "John", "amount": 123, "time": "2019-08-01 01:59:30.274"}
+                Random rand = new Random();
+
+                Integer amount = rand.nextInt(200) + 1;
+
+                DepositEvent depositEvent = new DepositEvent(customerNames[rand.nextInt(customerNames.length)], amount);
+
+                ProducerRecord<String, String> record =
+                        null;
+                try {
+                    record = new ProducerRecord<>("first_topic", objectMapper.writeValueAsString(depositEvent));
+                } catch (JsonProcessingException e) {
+                    logger.error("There was an error processing the deposit event", e);
                 }
-            });
+
+                // send data - asynchronous
+                producer.send(record, (RecordMetadata recordMetadata, Exception e) -> {
+                    // executes every time a record is successfully sent or an exception is thrown
+                    if (e == null) {
+                        // the record was successfully sent
+                        logger.info("Received new metadata. \n" +
+                                "Topic:" + recordMetadata.topic() + "\n" +
+                                "Partition: " + recordMetadata.partition() + "\n" +
+                                "Offset: " + recordMetadata.offset() + "\n" +
+                                "Timestamp: " + recordMetadata.timestamp());
+                    } else {
+                        logger.error("Error while producing", e);
+                    }
+                });
+            }
         }
 
         // flush data
-        producer.flush();
+        // producer.flush();
         // flush and close producer
-        producer.close();
+        // producer.close();
     }
 }

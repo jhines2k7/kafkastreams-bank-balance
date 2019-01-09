@@ -6,7 +6,7 @@ import java.util.Date;
 public class DepositEvent {
     private String name;
     private Integer amount;
-    private String timestamp;
+    private String time;
 
     public DepositEvent(String name, Integer amount) {
         this.name = name;
@@ -15,7 +15,7 @@ public class DepositEvent {
         Date date = new Date();
         Timestamp ts = new Timestamp(date.getTime());
 
-        this.timestamp = ts.toString();
+        this.time = ts.toString();
     }
 
     public String getName() {
@@ -34,7 +34,7 @@ public class DepositEvent {
         this.amount = amount;
     }
 
-    public String getTimestamp() {
-        return timestamp;
+    public String getTime() {
+        return time;
     }
 }

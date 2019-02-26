@@ -43,12 +43,16 @@ public class BankBalanceProducer {
 
             Integer amount = rand.nextInt(200) + 1;
 
-            DepositEvent depositEvent = new DepositEvent(customerNames[rand.nextInt(customerNames.length)], amount);
+            String customerName = customerNames[rand.nextInt(customerNames.length)];
+
+            DepositEvent depositEvent = new DepositEvent(customerName, amount);
 
             ProducerRecord<String, String> record =
                     null;
             try {
-                record = new ProducerRecord<>("bank-deposit-events", objectMapper.writeValueAsString(depositEvent));
+                record = new ProducerRecord<>("bank-deposit-events",
+                        customerName,
+                        objectMapper.writeValueAsString(depositEvent));
             } catch (JsonProcessingException e) {
                 logger.error("There was an error processing the deposit event", e);
             }

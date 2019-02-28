@@ -14,7 +14,7 @@ public class BankBalanceProducer {
     public static void main(String[] args) {
         final Logger logger = LoggerFactory.getLogger(BankBalanceProducer.class);
 
-        String bootstrapServers = "13.56.138.148:9092";
+        String bootstrapServers = "68.183.153.83:9092";
 
         // create Producer properties
         Properties producerProperties = new Properties();
